@@ -11,49 +11,52 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataStudent extends SQLiteOpenHelper {
+public class DataStudent extends  SQLiteOpenHelper{
+
     public DataStudent(@Nullable Context context,
-                       @Nullable String name,
-                       @Nullable SQLiteDatabase.CursorFactory factory,
-                       int version) {
+                    @Nullable String name,
+                    @Nullable SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-            String sql = "CREATE TABLE student ( "+
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                            "name TEXT NOT NULL)";
+        String sql="CREATE TABLE user (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)";
+        db.execSQL(sql);
+
     }
+    public void addUser(Student user){
+        SQLiteDatabase db=this.getWritableDatabase();
 
-    public  void addStudent(Student student){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("name", student.getName());
+        ContentValues values=new ContentValues();
+        values.put("name",user.getName());
 
-        db.insert("student", null,values);
+
+        db.insert("user",null,values);
     }
+    public List<Student> getAllUser(){
+        List<Student> userList=new ArrayList<>();
+        String sql="select *from user";
 
-    public List<Student> getAll(){
-        List<Student> studentList = new ArrayList<>();
-        String sql = "select * from student";
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(sql, null);
-
+        SQLiteDatabase db=this.getReadableDatabase();
+        Cursor cursor=db.rawQuery(sql,null);
         if(cursor.moveToFirst()){
             do{
-                Student student = new Student();
-                student.setId(cursor.getInt(0));
-                student.setName(cursor.getString(1));
-
-                studentList.add(student);
-
+                Student user=new Student();
+                user.setId(cursor.getInt(0));
+                user.setName(cursor.getString(1));
+                userList.add(user);
             }while (cursor.moveToNext());
         }
         cursor.close();
         db.close();
-        return  studentList;
+        return  userList;
+    }
+    public int RemoveUser(int id){
+        SQLiteDatabase db=this.getReadableDatabase();
+        return db.delete("user","id =?",new String[]{
+                String.valueOf(id)
+        });
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

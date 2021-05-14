@@ -4,68 +4,90 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity {
-
     DataStudent dataStudent;
-    Button add_btn,remove_btn;
+    Button btnAdd,btnRemove,btnCancel;
     EditText name_edt;
     ListView lvName;
+
     ArrayList nameList;
-    ArrayAdapter arrayAdapter;
+    ArrayList idList;
+    ArrayAdapter adapter;
+    int index;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        dataStudent=new DataStudent(this,"userdb",
+                null,1);
 
-        dataStudent = new DataStudent(this, "student.sqlite", null, 1);
-        dataStudent.addStudent(new Student("Thanh"));
-        dataStudent.addStudent(new Student("Huy "));
-        dataStudent.addStudent(new Student("Toan"));
-        dataStudent.addStudent(new Student("Hung"));
+        name_edt=findViewById(R.id.editTextTextPersonName);
+        btnAdd=findViewById(R.id.btnAdd);
+        btnRemove=findViewById(R.id.btnRemove);
+        btnCancel=findViewById(R.id.btnCancel);
+        lvName=findViewById(R.id.lvName);
 
+        /*khoi tao nameList*/
+        nameList=new ArrayList();
+        idList=new ArrayList();
 
-        nameList = new ArrayList();
+        getNameList();
+        adapter=new ArrayAdapter(this,android.R.layout.simple_list_item_1,nameList);
+        lvName.setAdapter(adapter);
 
-        name_edt = findViewById(R.id.editTextTextPersonName);
-        add_btn = findViewById(R.id.btnAdd);
-        remove_btn = findViewById(R.id.btnRemove);
-        lvName = findViewById(R.id.lvName);
-
-
-        add_btn.setOnClickListener(new View.OnClickListener() {
+        btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    dataStudent.addStudent(new Student(name_edt.getText().toString()));
-                    getNameList();
-                    arrayAdapter.notifyDataSetChanged();
+                dataStudent.addUser(new Student(name_edt.getText().toString()));
+                getNameList();
+                adapter.notifyDataSetChanged();
             }
         });
-    //   getNameList();
-        arrayAdapter = new ArrayAdapter(this,
-                android.R.layout.simple_list_item_1,nameList);
-            lvName.setAdapter(arrayAdapter);
+        btnRemove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataStudent.RemoveUser((int)idList.get(index));
+                getNameList();
+                adapter.notifyDataSetChanged();
+                Toast.makeText(MainActivity.this, "Successfull", Toast.LENGTH_SHORT).show();
+            }
+        });
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+                System.exit(0);
+            }
+        });
+        lvName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int i, long id) {
+                index=i;
+            }
+        });
+
+
     }
-
-    private ArrayList getNameList(){
-
+    private  ArrayList getNameList(){
         nameList.clear();
+        idList.clear();
+        for (Iterator iterator = dataStudent.getAllUser().iterator(); iterator.hasNext(); ) {
+            Student user = (Student) iterator.next();
+            nameList.add(user.getName());
+            idList.add(user.getId());
 
-        for (Iterator iterator = dataStudent.getAll().iterator(); iterator.hasNext(); ) {
-            Student student = (Student) iterator.next();
-
-            nameList.add(student.getName());
-
-            
         }
-        return nameList;
+        return  nameList;
     }
-
 }
